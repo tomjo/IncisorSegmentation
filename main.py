@@ -3,12 +3,15 @@ from Case import Incisor
 import numpy as np
 from GPA import *
 from PCA import *
+import Visualization
+import cv2
 
 if __name__ == '__main__':
     cases = []
     #init cases
     for i in range(1,15):
         cases.append(Case(i))
+    
     #GPA (generalized procrustes analysis) to normalize shapes
     for incisor in range(0,8):
         lmArr = np.empty((2,40,2), dtype=int)
@@ -19,7 +22,7 @@ if __name__ == '__main__':
         
         for case in range(0, len(cases)):
             cases[case].incisors[incisor].normalized = shapes[case]
-            
+          
     #format data for PCA
     ii = 0
     X = np.append(cases[0].incisors[ii].normalized[:,0], cases[0].incisors[ii].normalized[:,1])
@@ -29,4 +32,3 @@ if __name__ == '__main__':
     eigenvalues, eigenvectors, mu = pca(X,3)
     
     print 'succ'
-            
