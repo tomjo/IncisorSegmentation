@@ -65,4 +65,6 @@ def doPCA():
         incisor.readVector(shapes[i, :])
         renderLandmarks(incisor.lm)
 
+def draw():
+    pass
     

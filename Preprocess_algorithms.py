@@ -66,6 +66,11 @@ def median(image):
 #http://docs.opencv.org/master/d5/daf/tutorial_py_histogram_equalization.html
 def histogram(image):
     return cv2.equalizeHist(image)
+    
+#https://en.wikipedia.org/wiki/Adaptive_histogram_equalization
+def clahe(image, clipLimit=2.0, gridSize=(32,32)):
+    cl = cv2.createCLAHE(clipLimit, gridSize)
+    return cl.apply(image)
 
 #you can test the effects of the different algorithms here
 def testalgorithms():
