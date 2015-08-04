@@ -68,7 +68,7 @@ def doPCA():
 
 def draw():
     img = cv2.imread("Radiographs/01.tif", 0)
-    img = Preprocess_algorithms.clahe(img)
+    #img = Preprocess_algorithms.clahe(img)
     for i in range(1,8):
         #asm = alignModel(i, False)
         #varm = VarianceModel(asm)

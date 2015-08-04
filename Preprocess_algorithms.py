@@ -79,6 +79,7 @@ def testalgorithms():
     #img_fourier = fourier(img) #does not work well
     img_gaussian = gaussian(img)
     img_medianhist = medianAndHistogram(img)
+    img_clahe = clahe(img)
 
     #show images
     height = 500
@@ -95,4 +96,6 @@ def testalgorithms():
     cv2.imshow('image',img_gaussian)
     cv2.waitKey()
     cv2.imshow('image',img_medianhist)
+    cv2.waitKey()
+    cv2.imshow('image',img_clahe)
     cv2.waitKey()
