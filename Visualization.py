@@ -5,7 +5,7 @@ from ASM import ASM
 from Case import Case, Incisor
 import Util
 from VarianceModel import VarianceModel
-from PCA import pca
+import Preprocess_algorithms
     
 def renderLandmarks(landmarks):
     minX = landmarks[:,1].min()
@@ -42,11 +42,12 @@ def calcMeanAndShow():
     incisor.readVector(asm.meanModel())
     renderLandmarks(incisor.lm)
     
-def alignModel():
-    asm = ASM(Util.getIncisorVectors(1))
+def alignModel(incisor=1,render=True):
+    asm = ASM(Util.getIncisorVectors(incisor))
     asm.align()
     asm.rescaleAndRealign()
-    renderLandmarks(asm.meanShape.lm)
+    if render:
+        renderLandmarks(asm.meanShape.lm)
     return asm
     
 def alignModelAndVisualizeShapes():
@@ -66,5 +67,22 @@ def doPCA():
         renderLandmarks(incisor.lm)
 
 def draw():
-    pass
+    img = cv2.imread("Radiographs/01.tif", 0)
+    img = Preprocess_algorithms.clahe(img)
+    for i in range(1,8):
+        #asm = alignModel(i, False)
+        #varm = VarianceModel(asm)
+        #shapes = varm.fit(1,10)
+        #incisor = Incisor(None)
+        asm = ASM(Util.getIncisorVectors(i))
+        #for i in range(len(shapes)):
+        #    incisor.readVector(shapes[i, :])
+        cv2.polylines(img, np.int32([asm.lm]), True, (0,255,0), 2)
+    cv2.namedWindow("main",0)
+    cv2.resizeWindow("main", 1500, 900)
+    cv2.imshow("main", img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    
+    
     
