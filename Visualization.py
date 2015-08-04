@@ -1,7 +1,12 @@
 import numpy as np
 import cv2
 import math
-
+from ASM import ASM
+from Case import Case, Incisor
+import Util
+from VarianceModel import VarianceModel
+from PCA import pca
+    
 def renderLandmarks(landmarks):
     minX = landmarks[:,1].min()
     maxX = landmarks[:,1].max()
@@ -30,3 +35,34 @@ def renderLandmarksOverImage(landmarks, img):
     cv2.imshow('Landmarks over img', tmp)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+    
+def calcMeanAndShow():
+    asm = ASM(Util.getIncisorVectors(1))
+    incisor = Incisor(None)
+    incisor.readVector(asm.meanModel())
+    renderLandmarks(incisor.lm)
+    
+def alignModel():
+    asm = ASM(Util.getIncisorVectors(1))
+    asm.align()
+    asm.rescaleAndRealign()
+    renderLandmarks(asm.meanShape.lm)
+    return asm
+    
+def alignModelAndVisualizeShapes():
+    asm = alignModel()
+    for shape in asm.lm:
+        renderLandmarks(shape.lm)
+
+def doPCA():
+    asm = alignModel()
+    varm = VarianceModel(asm)
+    shapes = varm.fit(1,10)
+    
+    renderLandmarks(asm.meanShape.lm)
+    incisor = Incisor(None)
+    for i in range(len(shapes)):
+        incisor.readVector(shapes[i, :])
+        renderLandmarks(incisor.lm)
+
+    
