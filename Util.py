@@ -1,27 +1,32 @@
-import math
-import numpy as np
+import cv
+import Shape
+import Point
 import fnmatch
-from Case import Incisor
 import os
+import cv2
 
-def calcRotation(shape, curShape):
-    a = 0.
-    b = 0.
-    for i in range(len(shape.lm)):
-        a += curShape.lm[i,0] * shape.lm[i,1] - curShape.lm[i,1] * shape.lm[i,0]
-        b += curShape.lm[i,0] * shape.lm[i,0] - curShape.lm[i,1] * shape.lm[i,1]
-    return math.atan2(a,b)
+def loadLandmarks(incisor,dirname='Landmarks/Original/', excl=[]):
+    pts = []
+    files = fnmatch.filter(os.listdir(dirname), "*-{}.txt".format(str(incisor)))
+    cases = [i for i in range(len(files)) if (i+1) not in excl]
+    for i in cases:
+        pts.append(_loadLandmarks(dirname+files[i]))
+    return pts 
     
-def isConverged(prevShape, newShape, threshold=0.0000001):
-    diff = newShape.lm - prevShape.lm
-    diff = diff**2
-    maxChange = np.max(diff)
-    return maxChange < threshold
+def _loadLandmarks(file):
+    s = Shape.Shape([])
+    lines  = open(file).readlines()
+    for i in range(0, len(lines), 2):
+        s.addPoint(Point.Point(float(lines[i+1].strip()), float(lines[i].strip())))
+    return s  
     
-def getIncisorVectors(incisorNum):
-    files = fnmatch.filter(os.listdir('Landmarks/original/.'), "*-{}.txt".format(str(incisorNum)))
-    vectors = np.zeros((len(files), 80))
-    for i in range(len(files)):
-        incisor = Incisor.fromFile('Landmarks/original/'+files[i])
-        vectors[i,:] = np.hstack(incisor.lm)
-    return vectors;
+def loadImage(caseId, dirname='Radiographs/'):
+    return cv2.imread(dirname+caseId+'.tif')
+    #return cv.LoadImage(dirname+caseId+'.tif')
+    
+def drange(start, stop, step):
+    r = start
+    while r < stop:
+        yield r
+        r += step
+    

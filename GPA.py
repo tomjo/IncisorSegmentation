@@ -1,36 +1,31 @@
 import numpy as np
+import sys
+import AlignmentUtils
 
-def generalizedProcrustesAnalysis(shapes, threshold=0.00001):
-    tmp = shapes.astype(float)
-    
-    mean = tmp[0]
-    done = False
-    while not done:
-        #normalize translation -> all centers to origin
-        tmp = map(centerOrigin, tmp)
-        #normalize scale
-        tmp = map(normalizeScale, tmp)
-        #normalize rotation -> rotation of each shape aligned with current mean
-        tmp = [alignRotation(shape, mean) for shape in tmp]
-        nextMean = sum(shape for shape in tmp) / len(tmp)
-        done = all([m - n < threshold for (m,n) in zip(nextMean.flatten(), mean.flatten())])
-        mean = nextMean
-    
-    tmp = [alignRotation(shape, mean) for shape in tmp]
-    return mean,tmp
+#aligns set of shapes
+def gpa(shapes, w):
+    # rotate/scale/translate each shape to match first
+    shapes[1:] = [AlignmentUtils.alignToShape(s, shapes[0], w) for s in shapes[1:]]
+    a = shapes[0]
+    trans = np.zeros((4, len(shapes)))
 
-def centerOrigin(s):
-    #align shape to origin
-    return s - s.mean(0)
+    accuracy = sys.maxint
+    while True:
+      mean = calcMeanShape(shapes)
+      mean = AlignmentUtils.alignToShape(mean, a, w)
+      for i in range(len(shapes)):
+        trans[:, i] = AlignmentUtils.getPoseParams(shapes[i], mean, w)
+        shapes[i] = AlignmentUtils.applyPoseParams(shapes[i], trans[:,i])
+
+      # Stopcriteria: average transformation close to IDENTITY, als het verschil kleiner wordt -> precisie limiet bereikt
+      diff = np.mean(np.array([1, 0, 0, 0]) - np.mean(trans, axis=1))**2
+      if diff > accuracy:
+        break
+      accuracy = diff
+    return shapes
     
-def normalizeScale(s):
-    #scale shape by 1/norm(shape)
-    return s.astype(float) / np.linalg.norm(s)
-    
-def alignRotation(s1, s2):
-    #returns the first shape aligned to the second shape
-    #rotation = svd
-    u,s,v = np.linalg.svd(np.dot(s2.conj().transpose(), s1))
-    v = v.conj().transpose()
-    u = u.conj().transpose()
-    return np.dot(np.dot(s1, v), u)
+def calcMeanShape(shapes):
+    mean = shapes[0]
+    for shape in shapes[1:]:
+        mean = mean + shape
+    return mean / len(shapes)
